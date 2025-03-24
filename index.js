@@ -9,7 +9,21 @@ app.use(express.json());
 
 app.use(async (req, res) => {
   try {
-    const url = `${API_BASE}${req.originalUrl}`;
+    const baseUrl = "https://api.dofusdb.fr" + req.path;
+const searchParams = new URLSearchParams(req.query);
+
+// Ajoute lang=fr s’il n’existe pas
+if (!searchParams.has("lang")) {
+  searchParams.set("lang", "fr");
+}
+
+// Ajoute limit=100 s’il n’existe pas
+if (!searchParams.has("limit")) {
+  searchParams.set("limit", "100");
+}
+
+const url = `${baseUrl}?${searchParams.toString()}`;
+
     const method = req.method;
     const headers = { "Content-Type": "application/json" };
     const options = { method, headers };
