@@ -9,14 +9,14 @@ app.use(async (req, res) => {
   const baseUrl = "https://api.dofusdb.fr" + req.path;
   const searchParams = new URLSearchParams(req.query);
 
-  // Forcer lang=fr si non fourni
+  // 🔥 Forcer lang=fr
   if (!searchParams.has("lang")) {
     searchParams.set("lang", "fr");
   }
 
-  // Forcer limit=100 si non fourni
+  // 🔥 Forcer limit=1000 (au lieu de 10 par défaut)
   if (!searchParams.has("limit")) {
-    searchParams.set("limit", "100");
+    searchParams.set("limit", "1000");
   }
 
   const url = `${baseUrl}?${searchParams.toString()}`;
