@@ -1,29 +1,29 @@
 export default async function handler(req, res) {
   const baseUrl = "https://api.dofusdb.fr";
-  const targetPath = req.url; // Exemple : /spells
 
   try {
-    const response = await fetch(baseUrl + targetPath);
+    const targetUrl = `${baseUrl}${req.url}`;
+    const response = await fetch(targetUrl);
 
     const contentType = response.headers.get("content-type") || "";
     if (!contentType.includes("application/json")) {
-      throw new Error("La réponse n'est pas du JSON valide");
+      throw new Error("La réponse reçue n'est pas du JSON.");
     }
 
     const json = await response.json();
 
-    // Si la réponse contient un tableau dans "data", retourne-le
+    // GPT-friendly: si "data" est un tableau, on retourne uniquement ce tableau
     if (json && Array.isArray(json.data)) {
       return res.status(200).json(json.data);
     }
 
-    // Sinon retourne la réponse brute
+    // Sinon, on renvoie le contenu brut
     return res.status(200).json(json);
 
-  } catch (err) {
-    return res.status(500).json({
+  } catch (error) {
+    res.status(500).json({
       error: "Erreur proxy",
-      detail: err.message
+      detail: error.message
     });
   }
 }
