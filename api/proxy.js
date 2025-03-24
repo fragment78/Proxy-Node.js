@@ -2,6 +2,7 @@ export default async function handler(req, res) {
   const baseUrl = "https://api.dofusdb.fr" + req.url.split("?")[0];
   const searchParams = new URLSearchParams(req.query);
 
+  // Forcer les bons paramètres
   if (!searchParams.has("lang")) {
     searchParams.set("lang", "fr");
   }
