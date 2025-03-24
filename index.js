@@ -7,27 +7,29 @@ const API_BASE = "https://api.dofusdb.fr";
 
 app.use(express.json());
 
-// Proxy GET routes
-app.get("*", async (req, res) => {
+app.use(async (req, res) => {
   try {
-    const response = await fetch(`${API_BASE}${req.originalUrl}`);
-    const data = await response.json();
-    res.status(response.status).json(data);
-  } catch (error) {
-    res.status(500).json({ error: "Erreur proxy", detail: error.message });
-  }
-});
+    const url = `${API_BASE}${req.originalUrl}`;
+    const method = req.method;
+    const headers = { "Content-Type": "application/json" };
+    const options = { method, headers };
 
-// Proxy POST (rarement utilisé, mais on le supporte)
-app.post("*", async (req, res) => {
-  try {
-    const response = await fetch(`${API_BASE}${req.originalUrl}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(req.body),
-    });
-    const data = await response.json();
-    res.status(response.status).json(data);
+    if (method === "POST" || method === "PUT") {
+      options.body = JSON.stringify(req.body);
+    }
+
+    const response = await fetch(url, options);
+
+    // Vérifie si c’est du JSON
+    const contentType = response.headers.get("content-type") || "";
+    if (contentType.includes("application/json")) {
+      const data = await response.json();
+      res.status(response.status).json(data);
+    } else {
+      const text = await response.text();
+      res.status(response.status).send(text); // Renvoie tel quel si ce n’est pas du JSON
+    }
+
   } catch (error) {
     res.status(500).json({ error: "Erreur proxy", detail: error.message });
   }
