@@ -1,38 +1,21 @@
-// index.js
-import express from "express";
-import fetch from "node-fetch";
+export default async function handler(req, res) {
+  const { url } = req;
+  const apiUrl = `https://api.dofusdb.fr${url}`;
 
-const app = express();
-const API_BASE = "https://api.dofusdb.fr";
-
-app.use(express.json());
-
-app.use(async (req, res) => {
   try {
-    const url = `${API_BASE}${req.originalUrl}`;
-    const method = req.method;
-    const headers = { "Content-Type": "application/json" };
-    const options = { method, headers };
+    const response = await fetch(apiUrl);
+    const json = await response.json();
 
-    if (method === "POST" || method === "PUT") {
-      options.body = JSON.stringify(req.body);
-    }
-
-    const response = await fetch(url, options);
-
-    // Vérifie si c’est du JSON
-    const contentType = response.headers.get("content-type") || "";
-    if (contentType.includes("application/json")) {
-      const data = await response.json();
-      res.status(response.status).json(data);
+    // Retourne uniquement le tableau s’il existe dans data
+    if (json && Array.isArray(json.data)) {
+      res.status(200).json(json.data);
     } else {
-      const text = await response.text();
-      res.status(response.status).send(text); // Renvoie tel quel si ce n’est pas du JSON
+      res.status(200).json(json); // fallback
     }
-
   } catch (error) {
-    res.status(500).json({ error: "Erreur proxy", detail: error.message });
+    res.status(500).json({
+      error: "Erreur proxy",
+      detail: error.message
+    });
   }
-});
-
-export default app;
+}
